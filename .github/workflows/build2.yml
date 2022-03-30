@@ -1,0 +1,16 @@
+name: build2
+
+on: [push]
+
+jobs:
+  Ubuntu:
+    name: Ubuntu Latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: Rookfighter/setup-build2@master
+  macOS:
+    name: MacOS Latest
+    runs-on: macos-latest
+    steps:
+    - uses: Rookfighter/setup-build2@master
+
