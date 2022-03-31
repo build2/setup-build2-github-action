@@ -10,7 +10,7 @@ runs:
   steps:
     - run: mkdir -p ${{ runner.temp }}/build2-build
       shell: bash
-      
+      if: ${{ runner.os != 'Windows' }}
     - run: curl -sSfO https://download.build2.org/${{ inputs.build2-version }}/build2-install-${{ inputs.build2-version }}.sh
       shell: bash
       working-directory: ${{ runner.temp }}/build2-build
@@ -20,14 +20,18 @@ runs:
       working-directory: ${{ runner.temp }}/build2-build
       if: ${{ runner.os != 'Windows' }}
     
-    - run: curl -sSfO https://download.build2.org/${{ inputs.build2-version }}/build2-install-msvc-${{ inputs.build2-version }}.bat
+    - run: New-Item -Path "${{ runner.temp }}\build2-build" -ItemType Directory
+      shell: powershell
+      if: ${{ runner.os == 'Windows' }}
+    - run: curl -Uri "https://download.build2.org/${{ inputs.build2-version }}/build2-install-${{ inputs.build2-version }}.bat" -OutFile "build2-install-${{ inputs.build2-version }}.bat"
       shell: bash
-      working-directory: ${{ runner.temp }}/build2-build
+      working-directory: ${{ runner.temp }}\build2-build
       if: ${{ runner.os == 'Windows' }}
     - shell: powershell
+      working-directory: ${{ runner.temp }}\build2-build
       if: ${{ runner.os == 'Windows' }}
       run: |
-        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vswhere = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
         $vcvarspath = &$vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
         Write-Output "vc tools located at: $vcvarspath"
         cmd.exe /c "call `"$vcvarspath\VC\Auxiliary\Build\vcvars64.bat`" && .\build2-install-msvc-${{ inputs.build2-version }}.bat --yes --trust `"70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43`""
