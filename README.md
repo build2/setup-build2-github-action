@@ -10,7 +10,7 @@ After using the setup-build2 action all build2 related command line tools - like
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: Rookfighter/setup-build2@v2
+- uses: Rookfighter/setup-build2@1.0.0
 - run: bdep init -C @gcc cc config.cxx=g++
 - run: b
 - run: b test
