@@ -23,7 +23,7 @@ runs:
     - run: New-Item -Path "${{ runner.temp }}\build2-build" -ItemType Directory
       shell: powershell
       if: ${{ runner.os == 'Windows' }}
-    - run: curl -Uri "https://download.build2.org/${{ inputs.build2-version }}/build2-install-${{ inputs.build2-version }}.bat" -OutFile "build2-install-${{ inputs.build2-version }}.bat"
+    - run: curl -Uri "https://download.build2.org/${{ inputs.build2-version }}/build2-install-msvc-${{ inputs.build2-version }}.bat" -OutFile "build2-install-msvc-${{ inputs.build2-version }}.bat"
       shell: bash
       working-directory: ${{ runner.temp }}\build2-build
       if: ${{ runner.os == 'Windows' }}
