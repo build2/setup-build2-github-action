@@ -19,6 +19,15 @@ runs:
       shell: bash
       working-directory: ${{ runner.temp }}/build2-build
       if: ${{ runner.os != 'Windows' }}
+    - run: b --version
+      shell: bash
+      if: ${{ runner.os != 'Windows' }}
+    - run: bdep --version
+      shell: bash
+      if: ${{ runner.os != 'Windows' }}
+    - run: bpkg --version
+      shell: bash
+      if: ${{ runner.os != 'Windows' }}
     
     - run: New-Item -Path "${{ runner.temp }}\build2-build" -ItemType Directory
       shell: powershell
@@ -39,4 +48,13 @@ runs:
         $oldpath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).path
         $newpath = "$oldpath;C:\build2\bin"
         Write-Output "Path: $newpath"
-        Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newpath
+        setx /M PATH "$newpath"
+    - run: b --version
+      shell: cmd
+      if: ${{ runner.os == 'Windows' }}
+    - run: bdep --version
+      shell: cmd
+      if: ${{ runner.os == 'Windows' }}
+    - run: bpkg --version
+      shell: cmd
+      if: ${{ runner.os == 'Windows' }}
