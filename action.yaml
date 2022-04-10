@@ -1,6 +1,9 @@
 name: 'Setup build2'
 description: 'Installs the build2 build system on the runner'
 author: 'Fabian Meyer'
+branding:
+  icon: 'box'  
+  color: 'blue'
 inputs:
   build2-version:
     description: 'Version spec of the version to use. Examples: 0.14.0'
