@@ -4,15 +4,43 @@ on: [push]
 
 jobs:
   Ubuntu:
-    name: Ubuntu Latest
-    runs-on: ubuntu-latest
+    name: ${{matrix.config.name}}
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      matrix:
+        config:
+            - name: Ubuntu Latest
+              os: ubuntu-latest
+              build2_version: latest
+            - name: Ubuntu Staged
+              os: ubuntu-latest
+              build2_version: staged
+            - name: Ubuntu 0.14.0
+              os: ubuntu-latest
+              build2_version: "0.14.0"
     steps:
     - uses: Rookfighter/setup-build2@master
+      with:
+        build2-version: '${{matrix.config.build2_version}}'
   MacOS:
-    name: MacOS Latest
-    runs-on: macos-latest
+    name: ${{matrix.config.name}}
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      matrix:
+        config:
+            - name: MacOS Latest
+              os: macos-latest
+              build2_version: latest
+            - name: MacOS Staged
+              os: macos-latest
+              build2_version: staged
+            - name: MacOS 0.14.0
+              os: macos-latest
+              build2_version: "0.14.0"
     steps:
     - uses: Rookfighter/setup-build2@master
+      with:
+        build2-version: '${{matrix.config.build2_version}}'
   Windows:
     name: Windows Latest
     runs-on: windows-latest
