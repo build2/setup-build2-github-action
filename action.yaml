@@ -2,26 +2,81 @@ name: 'Setup build2'
 description: 'Installs the build2 build system on the runner'
 author: 'Fabian Meyer'
 branding:
-  icon: 'box'  
+  icon: 'box'
   color: 'blue'
 inputs:
   build2-version:
     description: 'Version spec of the version to use. Examples: 0.14.0'
-    default: '0.14.0'
+    default: 'latest'
+  build2-trust:
+    description: 'Trust key for build2 installation.'
+    default: '70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43'
 runs:
   using: "composite"
   steps:
-    - run: mkdir -p ${{ runner.temp }}/build2-build
+    - if: ${{ runner.os != 'Windows' }}
       shell: bash
-      if: ${{ runner.os != 'Windows' }}
-    - run: curl -sSfO https://download.build2.org/${{ inputs.build2-version }}/build2-install-${{ inputs.build2-version }}.sh
-      shell: bash
-      working-directory: ${{ runner.temp }}/build2-build
-      if: ${{ runner.os != 'Windows' }}
-    - run: sudo sh build2-install-${{ inputs.build2-version }}.sh --yes --trust "70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43"
-      shell: bash
-      working-directory: ${{ runner.temp }}/build2-build
-      if: ${{ runner.os != 'Windows' }}
+      run: |
+        BUILD2_BUILD_DIR="${{ runner.temp }}/build2-build"
+        BUILD2_VERSION="${{ inputs.build2-version }}"
+        BUILD2_TRUST="${{ inputs.build2-trust }}"
+
+        extract_build2_archive()
+        {
+          grep "toolchain" "$1" | sed "s|[^\*]*\*||g"
+        }
+
+        extract_build2_script()
+        {
+          grep "build2-install-.*\.sh" toolchain.sha256 | sed "s|[^\*]*\*||g"
+        }
+
+        install_build2()
+        {
+          archive_url=$1
+          script_url=$2
+          script_name=$(basename "$script_url")
+
+          echo "Download $archive_url"
+          curl -sSfO "$archive_url"
+
+          echo "Download $script_url"
+          curl -sSfO "$script_url"
+
+          sh "$script_name" --local --no-check --yes --trust "$BUILD2_TRUST"
+        }
+
+        mkdir -p "$BUILD2_BUILD_DIR"
+        cd "$BUILD2_BUILD_DIR"
+
+        case "$BUILD2_VERSION" in
+        "latest")
+          echo "Download https://download.build2.org/toolchain.sha256"
+          curl -sSfO https://download.build2.org/toolchain.sha256
+
+          archive_name=$(extract_build2_archive toolchain.sha256)
+          script_name=$(extract_build2_script toolchain.sha256)
+
+          BUILD2_ARCHIVE="https://download.build2.org/$archive_name"
+          BUILD2_SCRIPT="https://download.build2.org/$script_name"
+          ;;
+        "staged")
+          echo "Download https://stage.build2.org/0/toolchain.sha256"
+          curl -sSfO https://stage.build2.org/0/toolchain.sha256
+          archive_name=$(extract_build2_archive toolchain.sha256)
+          script_name=$(extract_build2_script toolchain.sha256)
+
+          BUILD2_ARCHIVE="https://stage.build2.org/0/$archive_name"
+          BUILD2_SCRIPT="https://stage.build2.org/0/$script_name"
+          ;;
+        *)
+          BUILD2_ARCHIVE="https://download.build2.org/$BUILD2_VERSION/build2-toolchain-$BUILD2_VERSION.tar.gz"
+          BUILD2_SCRIPT="https://download.build2.org/$BUILD2_VERSION/build2-install-$BUILD2_VERSION.sh"
+          ;;
+        esac
+
+        install_build2 "$BUILD2_ARCHIVE" "$BUILD2_SCRIPT"
+
     - run: b --version
       shell: bash
       if: ${{ runner.os != 'Windows' }}
@@ -31,7 +86,7 @@ runs:
     - run: bpkg --version
       shell: bash
       if: ${{ runner.os != 'Windows' }}
-    
+
     - run: New-Item -Path "${{ runner.temp }}\build2-build" -ItemType Directory
       shell: powershell
       if: ${{ runner.os == 'Windows' }}
