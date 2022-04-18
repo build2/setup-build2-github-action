@@ -135,7 +135,7 @@ runs:
           $vcvarspath = &$vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           Write-Output "Found vc tools: $vcvarspath"
 
-          cmd.exe /c "call `"$vcvarspath\VC\Auxiliary\Build\vcvars64.bat`" && .\$ScriptName --yes --trust `"$BUILD2_TRUST`""
+          cmd.exe /c "call `"$vcvarspath\VC\Auxiliary\Build\vcvars64.bat`" && .\$ScriptName --local --no-check --yes --trust `"$BUILD2_TRUST`""
           Add-Content $env:GITHUB_PATH "C:\build2\bin"
         }
 
