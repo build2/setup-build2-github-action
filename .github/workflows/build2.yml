@@ -42,7 +42,51 @@ jobs:
       with:
         build2-version: '${{matrix.config.build2_version}}'
   Windows:
-    name: Windows Latest
-    runs-on: windows-latest
+    name: ${{matrix.config.name}}
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      matrix:
+        config:
+            - name: Windows Latest msvc
+              os: windows-latest
+              build2_version: latest
+              build2_windows_compiler: msvc
+            - name: Windows Latest mingw
+              os: windows-latest
+              build2_version: latest
+              build2_windows_compiler: mingw
+            - name: Windows Latest clang
+              os: windows-latest
+              build2_version: latest
+              build2_windows_compiler: clang
+
+            - name: Windows Staged msvc
+              os: windows-latest
+              build2_version: staged
+              build2_windows_compiler: msvc
+            - name: Windows Staged mingw
+              os: windows-latest
+              build2_version: staged
+              build2_windows_compiler: mingw
+            - name: Windows Staged clang
+              os: windows-latest
+              build2_version: staged
+              build2_windows_compiler: clang
+
+            - name: Windows 0.14.0 msvc
+              os: windows-latest
+              build2_version: "0.14.0"
+              build2_windows_compiler: msvc
+            - name: Windows 0.14.0 mingw
+              os: windows-latest
+              build2_version: "0.14.0"
+              build2_windows_compiler: mingw
+            - name: Windows 0.14.0 clang
+              os: windows-latest
+              build2_version: "0.14.0"
+              build2_windows_compiler: clang
     steps:
     - uses: Rookfighter/setup-build2@master
+      with:
+        build2-version: '${{matrix.config.build2_version}}'
+        build2-windows-compiler: '${{matrix.config.build2_windows_compiler}}'
