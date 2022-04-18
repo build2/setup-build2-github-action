@@ -1,5 +1,5 @@
 name: 'Setup build2'
-description: 'Installs the build2 build system on the runner'
+description: 'Installs the build2 build system on the runner.'
 author: 'Fabian Meyer'
 branding:
   icon: 'box'
@@ -11,6 +11,9 @@ inputs:
   build2-trust:
     description: 'Trust key for build2 installation.'
     default: '70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43'
+  build2-windows-compiler:
+    description: 'Compiler used to compile build2 in Windows runners. Can be "msvc", "mingw" or "clang".'
+    default: 'msvc'
 runs:
   using: "composite"
   steps:
@@ -87,27 +90,98 @@ runs:
       shell: bash
       if: ${{ runner.os != 'Windows' }}
 
-    - run: New-Item -Path "${{ runner.temp }}\build2-build" -ItemType Directory
+    - if: ${{ runner.os == 'Windows' }}
       shell: powershell
-      if: ${{ runner.os == 'Windows' }}
-    - run: Invoke-WebRequest -Uri "https://download.build2.org/${{ inputs.build2-version }}/build2-install-msvc-${{ inputs.build2-version }}.bat" -OutFile "build2-install-msvc-${{ inputs.build2-version }}.bat"
-      shell: powershell
-      working-directory: ${{ runner.temp }}\build2-build
-      if: ${{ runner.os == 'Windows' }}
-    - shell: powershell
-      working-directory: ${{ runner.temp }}\build2-build
-      if: ${{ runner.os == 'Windows' }}
       run: |
-        $vswhere = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-        $vcvarspath = &$vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-        Write-Output "Found vc tools: $vcvarspath"
-        cmd.exe /c "call `"$vcvarspath\VC\Auxiliary\Build\vcvars64.bat`" && .\build2-install-msvc-${{ inputs.build2-version }}.bat --yes --trust `"70:64:FE:E4:E0:F3:60:F1:B4:51:E1:FA:12:5C:E0:B3:DB:DF:96:33:39:B9:2E:E5:C2:68:63:4C:A6:47:39:43`""
-        Add-Content $env:GITHUB_PATH "C:\build2\bin"
-        $newpath = Get-Content $env:GITHUB_PATH
-        Write-Output $newpath
-    - run: echo "%PATH%"
-      shell: cmd
-      if: ${{ runner.os == 'Windows' }}
+        $BUILD2_BUILD_DIR="${{ runner.temp }}\build2-build"
+        $BUILD2_VERSION="${{ inputs.build2-version }}"
+        $BUILD2_TRUST="${{ inputs.build2-trust }}"
+        $BUILD2_WINDOWS_COMPILER="${{ inputs.build2-windows-compiler }}"
+
+        function extract_build2_archive($Path)
+        {
+          $match_info = Select-String -Path $Path -Pattern "\*.*toolchain.*"
+          return $match_info.matches[0].value
+        }
+
+        function extract_build2_baseutils($Path)
+        {
+          $match_info = Select-String -Path $Path -Pattern "\*.*baseutils.*"
+          return $match_info.matches[0].value
+        }
+
+        function extract_build2_script($Path)
+        {
+          $match_info = Select-String -Path $Path -Pattern "\*.*build2-install-$BUILD2_WINDOWS_COMPILER-.*\.bat"
+          return $match_info.matches[0].value
+        }
+
+        function install_build2($ArchiveUrl, $ScriptUrl, $BaseUtilsUrl)
+        {
+          $ArchiveName= Split-Path $ArchiveUrl -leaf
+          $ScriptName= Split-Path $ScriptUrl -leaf
+          $BaseutilsName= Split-Path $BaseUtilsUrl -leaf
+
+          Write-Output "Download $ArchiveUrl"
+          Invoke-WebRequest -Uri $ArchiveUrl -OutFile $ArchiveName
+
+          Write-Output "Download $BaseUtilsUrl"
+          Invoke-WebRequest -Uri $BaseUtilsUrl -OutFile $BaseutilsName
+
+          Write-Output "Download $ScriptUrl"
+          Invoke-WebRequest -Uri $ScriptUrl -OutFile $ScriptName
+
+          $vswhere = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vcvarspath = &$vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Write-Output "Found vc tools: $vcvarspath"
+
+          cmd.exe /c "call `"$vcvarspath\VC\Auxiliary\Build\vcvars64.bat`" && .\$ScriptName --yes --trust `"$BUILD2_TRUST`""
+          Add-Content $env:GITHUB_PATH "C:\build2\bin"
+        }
+
+        New-Item -Path $BUILD2_BUILD_DIR -ItemType Directory
+        Set-Location -Path $BUILD2_BUILD_DIR -PassThru
+
+        switch($BUILD2_VERSION)
+        {
+          "latest"
+          {
+          	Write-Output "Download https://download.build2.org/toolchain.sha256"
+          	Invoke-WebRequest -Uri "https://download.build2.org/toolchain.sha256" -OutFile "toolchain.sha256"
+
+            $archive_name = extract_build2_archive -Path "toolchain.sha256"
+            $baseutils_name = extract_build2_baseutils -Path "toolchain.sha256"
+            $script_name = extract_build2_script -Path "toolchain.sha256"
+
+            $BUILD2_ARCHIVE="https://download.build2.org/$archive_name"
+            $BUILD2_BASEUTILS = "https://download.build2.org/$baseutils_name"
+            $BUILD2_SCRIPT="https://download.build2.org/$script_name"
+          }
+
+          "staged"
+          {
+          	Write-Output "Download https://stage.build2.org/0/toolchain.sha256"
+          	Invoke-WebRequest -Uri "https://stage.build2.org/0/toolchain.sha256" -OutFile "toolchain.sha256"
+
+            $archive_name = extract_build2_archive -Path "toolchain.sha256"
+            $baseutils_name = extract_build2_baseutils -Path "toolchain.sha256"
+            $script_name = extract_build2_script -Path "toolchain.sha256"
+
+            $BUILD2_ARCHIVE="https://stage.build2.org/0/$archive_name"
+            $BUILD2_BASEUTILS = "https://stage.build2.org/0/$baseutils_name"
+            $BUILD2_SCRIPT="https://stage.build2.org/0/$script_name"
+          }
+
+          default
+          {
+            $BUILD2_ARCHIVE = "https://download.build2.org/$BUILD2_VERSION/build2-toolchain-$BUILD2_VERSION.tar.xz"
+            $BUILD2_BASEUTILS = "https://download.build2.org/$BUILD2_VERSION/build2-baseutils-$BUILD2_VERSION-x86_64-windows.zip"
+            $BUILD2_SCRIPT = "https://download.build2.org/$BUILD2_VERSION/build2-install-$BUILD2_WINDOWS_COMPILER-$BUILD2_VERSION.bat"
+          }
+        }
+
+        install_build2 -ArchiveUrl $BUILD2_ARCHIVE -ScriptUrl $BUILD2_SCRIPT - BaseUtilsUrl $BUILD2_BASEUTILS
+
     - run: b --version
       shell: cmd
       if: ${{ runner.os == 'Windows' }}
