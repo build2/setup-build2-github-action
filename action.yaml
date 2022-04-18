@@ -6,7 +6,7 @@ branding:
   color: 'blue'
 inputs:
   build2-version:
-    description: 'Version spec of the version to use. Examples: 0.14.0'
+    description: 'Version spec of the version to use. Can be "latest", "staged", "0.14.0", etc.'
     default: 'latest'
   build2-trust:
     description: 'Trust key for build2 installation.'
