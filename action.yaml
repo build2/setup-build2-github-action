@@ -101,19 +101,19 @@ runs:
         function extract_build2_archive($Path)
         {
           $match_info = Select-String -Path $Path -Pattern "\*.*toolchain.*"
-          return $match_info.matches[0].value
+          return $match_info.matches[0].value.substring(1)
         }
 
         function extract_build2_baseutils($Path)
         {
           $match_info = Select-String -Path $Path -Pattern "\*.*baseutils.*"
-          return $match_info.matches[0].value
+          return $match_info.matches[0].value.substring(1)
         }
 
         function extract_build2_script($Path)
         {
           $match_info = Select-String -Path $Path -Pattern "\*.*build2-install-$BUILD2_WINDOWS_COMPILER-.*\.bat"
-          return $match_info.matches[0].value
+          return $match_info.matches[0].value.substring(1)
         }
 
         function install_build2($ArchiveUrl, $ScriptUrl, $BaseUtilsUrl)
