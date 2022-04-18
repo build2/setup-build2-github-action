@@ -1,7 +1,7 @@
 # setup-build2
 
 ![License](https://img.shields.io/packagist/l/doctrine/orm.svg)
-![build2](https://github.com/Rookfighter/setup-build2/actions/workflows/build2.yml/badge.svg)
+![build2](https://github.com/build2/setup-build2/actions/workflows/build2.yml/badge.svg)
 
 This action provides setup routines to use [build2](https://build2.org) with GitHub Workflows.
 Currently Linux, MacOS and Windows based runners are supported.
@@ -13,7 +13,7 @@ After using the setup-build2 action all build2 related command line tools - like
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: Rookfighter/setup-build2@v1
+- uses: build2/setup-build2@v2
 - run: bdep init -C @gcc cc config.cxx=g++
 - run: b
 - run: b test
