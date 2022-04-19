@@ -19,15 +19,13 @@ steps:
 - run: b test
 ```
 
-The action also provides parameters to customize the `build2` toolset for your runner:#
+The action also provides parameters to customize the `build2` toolset for your runner:
 
-| option | description |
-|--------|-------------|
-| `build2-version` | Version of `build2` which should be installed. Default is `latest`. Can also be `staged` or a specific version like `0.14.0`. |
-| `build2-windows-compiler` | Used in Windows runners only. Defines the compiler which is used to build `build2`. Default is `msvc`. Can also be `mingw` or `clang`. |
+* `build2-version`: Version of `build2` which should be installed. Default is `latest`. Can also be `staged` or a specific version like `0.14.0`.
+* `build2-windows-compiler`: Used in Windows runners only. Defines the compiler which is used to build `build2`. Default is `msvc`. Can also be `mingw` or `clang`.
 
 
-```
+```yaml
 - uses: build2/setup-build2@v2
   with:
     build2-version: staged
