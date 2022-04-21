@@ -19,7 +19,7 @@ jobs:
               os: ubuntu-latest
               build2_version: "0.14.0"
     steps:
-    - uses: build2/setup-build2@master
+    - uses: build2/setup-build2-github-action@master
       with:
         build2-version: '${{matrix.config.build2_version}}'
   MacOS:
@@ -38,7 +38,7 @@ jobs:
               os: macos-latest
               build2_version: "0.14.0"
     steps:
-    - uses: build2/setup-build2@master
+    - uses: build2/setup-build2-github-action@master
       with:
         build2-version: '${{matrix.config.build2_version}}'
   Windows:
@@ -86,7 +86,7 @@ jobs:
               build2_version: "0.14.0"
               build2_windows_compiler: clang
     steps:
-    - uses: build2/setup-build2@master
+    - uses: build2/setup-build2-github-action@master
       with:
         build2-version: '${{matrix.config.build2_version}}'
         build2-windows-compiler: '${{matrix.config.build2_windows_compiler}}'

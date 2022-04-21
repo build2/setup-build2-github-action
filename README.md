@@ -1,19 +1,19 @@
-# setup-build2
+# setup-build2-github-action
 
 ![License](https://img.shields.io/packagist/l/doctrine/orm.svg)
-![build2](https://github.com/build2/setup-build2/actions/workflows/build2.yml/badge.svg)
+![build2](https://github.com/build2/setup-build2-github-action/actions/workflows/build2.yml/badge.svg)
 
 This action provides setup routines to use [build2](https://build2.org) with GitHub Workflows.
 Currently Linux, MacOS and Windows based runners are supported.
 
 ## Usage
 
-After using the `setup-build2` action all `build2` related command line tools - like `b` or `bdep` - are available within your runner.
+After using `setup-build2-github-action` all `build2` related command line tools - like `b` or `bdep` - are available within your runner.
 
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: build2/setup-build2@v2
+- uses: build2/setup-build2-github-action@v2
 - run: bdep init -C @gcc cc config.cxx=g++
 - run: b
 - run: b test
@@ -26,7 +26,7 @@ The action also provides parameters to customize the `build2` toolset for your r
 
 
 ```yaml
-- uses: build2/setup-build2@v2
+- uses: build2/setup-build2-github-action@v2
   with:
     build2-version: staged
     build2-windows-compiler: mingw
